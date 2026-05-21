@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include <algorithm>
 
+typedef unsigned int uint;
+
 using namespace std;
 
 // Definition for singly-linked list.
@@ -1720,6 +1722,174 @@ public:
             cout << "success." << endl;
         } else {
             cout << "failure. Expected: " << exp << " Result: " << res << endl;
+        }
+    }
+
+        /*
+    A self-dividing number is a number that is divisible by every digit it contains.
+
+    For example, 128 is a self-dividing number because 128 % 1 == 0, 128 % 2 == 0, and 128 % 8 == 0.
+
+    A self-dividing number is not allowed to contain the digit zero.
+
+    Given two integers left and right, return a list of all the self-dividing numbers in the range [left, right] (both inclusive).
+    */
+    vector<int> selfDividingNumbers(int left, int right) {
+        //----- INITIALIZATIONS -----
+        // The result of the algorithm
+        vector<int> result;
+        // Flag if self dividing
+        bool isSelfDividing;
+
+        //----- ALGORITHM -----
+        // Test each number to see if it's self-dividing
+        for(int i = left; i <= right; i++){
+            // Test if self-dividing
+            left = i;
+            isSelfDividing = true;
+            while(left > 0 && isSelfDividing){
+                if(left % 10 != 0){
+                    isSelfDividing = (i % (left % 10) == 0);
+                    left = left / 10;
+                } else {
+                    isSelfDividing = false;
+                }
+            }
+
+            // Add to the results if it is
+            if(isSelfDividing){
+                result.push_back(i);
+            }
+            
+        }
+        return result;
+    }
+
+    void test_selfDividingNumbers(){
+        // Tests
+        vector<int> exp = {1,2,3,4,5,6,7,8,9,11,12,15,22};
+        vector<int> res = selfDividingNumbers(1, 22);
+        
+        // Check elements of vector
+        bool validation = exp.size() == res.size();
+        int indexDiff;
+        for(uint i = 0; i < res.size() && validation; i++){
+            if(exp[i] != res[i]){
+                indexDiff = i;
+                validation = false;
+            }
+        }
+
+        // Print results of test
+        cout << "Test 1: ";
+        if(validation){
+            cout << "success." << endl;
+        } else {
+            cout << "failure. Different at " << indexDiff << " Expected: " << exp[indexDiff] << " Result: " << res[indexDiff] << endl;
+        }
+
+        exp = {48, 55, 66, 77};
+        res = selfDividingNumbers(47, 85);
+        
+        // Check elements of vector
+        validation = exp.size() == res.size();
+        for(uint i = 0; i < res.size() && validation; i++){
+            if(exp[i] != res[i]){
+                indexDiff = i;
+                validation = false;
+            }
+        }
+
+        // Print results of test
+        cout << "Test 2: ";
+        if(validation){
+            cout << "success." << endl;
+        } else {
+            cout << "failure. Different at " << indexDiff << " Expected: " << exp[indexDiff] << " Result: " << res[indexDiff] << endl;
+        }
+    }
+
+     /*
+    A self-dividing number is a number that is divisible by every digit it contains.
+
+    For example, 128 is a self-dividing number because 128 % 1 == 0, 128 % 2 == 0, and 128 % 8 == 0.
+
+    A self-dividing number is not allowed to contain the digit zero.
+
+    Given two integers left and right, return a list of all the self-dividing numbers in the range [left, right] (both inclusive).
+    */
+    vector<int> selfDividingNumbers(int left, int right) {
+        //----- INITIALIZATIONS -----
+        // The result of the algorithm
+        vector<int> result;
+        // Flag if self dividing
+        bool isSelfDividing;
+
+        //----- ALGORITHM -----
+        // Test each number to see if it's self-dividing
+        for(int i = left; i <= right; i++){
+            // Test if self-dividing
+            left = i;
+            isSelfDividing = true;
+            while(left > 0 && isSelfDividing){
+                if(left % 10 != 0){
+                    isSelfDividing = (i % (left % 10) == 0);
+                    left = left / 10;
+                } else {
+                    isSelfDividing = false;
+                }
+            }
+
+            // Add to the results if it is
+            if(isSelfDividing){
+                result.push_back(i);
+            }
+            
+        }
+        return result;
+    }
+
+    void test_selfDividingNumbers(){
+        // Tests
+        vector<int> exp = {1,2,3,4,5,6,7,8,9,11,12,15,22};
+        vector<int> res = selfDividingNumbers(1, 22);
+        
+        // Check elements of vector
+        bool validation = exp.size() == res.size();
+        int indexDiff;
+        for(uint i = 0; i < res.size() && validation; i++){
+            if(exp[i] != res[i]){
+                indexDiff = i;
+                validation = false;
+            }
+        }
+
+        // Print results of test
+        cout << "Test 1: ";
+        if(validation){
+            cout << "success." << endl;
+        } else {
+            cout << "failure. Different at " << indexDiff << " Expected: " << exp[indexDiff] << " Result: " << res[indexDiff] << endl;
+        }
+
+        exp = {48, 55, 66, 77};
+        res = selfDividingNumbers(47, 85);
+        
+        // Check elements of vector
+        validation = exp.size() == res.size();
+        for(uint i = 0; i < res.size() && validation; i++){
+            if(exp[i] != res[i]){
+                indexDiff = i;
+                validation = false;
+            }
+        }
+
+        // Print results of test
+        cout << "Test 2: ";
+        if(validation){
+            cout << "success." << endl;
+        } else {
+            cout << "failure. Different at " << indexDiff << " Expected: " << exp[indexDiff] << " Result: " << res[indexDiff] << endl;
         }
     }
 };

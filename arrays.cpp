@@ -8,6 +8,113 @@ typedef unsigned int uint;
 
 using namespace std;
 
+/*
+Implement a first in first out (FIFO) queue using only two stacks. The implemented queue should support all the functions of a normal queue (push, peek, pop, and empty).
+
+Implement the MyQueue class:
+
+    void push(int x) Pushes element x to the back of the queue.
+    int pop() Removes the element from the front of the queue and returns it.
+    int peek() Returns the element at the front of the queue.
+    boolean empty() Returns true if the queue is empty, false otherwise.
+
+Notes:
+
+    You must use only standard operations of a stack, which means only push to top, peek/pop from top, size, and is empty operations are valid.
+    Depending on your language, the stack may not be supported natively. You may simulate a stack using a list or deque (double-ended queue) as long as you use only a stack's standard operations.
+*/
+class MyQueue {
+public:
+    /*
+    Idea - one stack holds all the elements when popping and one stack holds all the elements when pushing and they transfer the elements back and forth.
+    */
+    MyQueue() {
+        justPushed = true;
+        size = 0;
+    }
+    
+    void push(int x) {
+        // Do transfer if needed
+        transferElements(true);
+
+        // Push element onto the stack
+        pushStack.push_back(x);
+        size++;
+    }
+    
+    int pop() {
+        // Do transfer
+        transferElements(false);
+
+        // Pop element from the stack
+        if(size >= 1){
+            int val = popStack[size - 1];
+            popStack.pop_back();
+            size--;
+            return val;
+        }
+
+        // Should be some kind of error code but here we are
+        return -1;
+    }
+    
+    int peek() {
+        // Do transfer
+        transferElements(false);
+
+        if(size >= 1){
+            return popStack[size - 1];
+        }
+
+        // Should be some kind of error code but here we are
+        return -1;
+    }
+    
+    bool empty() {
+        return size == 0;
+    }
+
+private:
+    //----- MEMBER FIELDS -----
+    // Flag for if the last operation does was a push
+    bool justPushed;
+    // Stack holding elements when doing pushes
+    vector<int> pushStack;
+    // Stack holding elements when doing pops and peeks
+    vector<int> popStack;
+    // Size
+    int size;
+
+    //----- MEMBER FUNCTIONS -----
+    void transferElements(bool toPush){
+        if(toPush && !justPushed){
+            // Transfer from pop to push
+            for(int i = 0; i < size; i++){
+                pushStack.push_back(popStack[popStack.size() - 1]);
+                popStack.pop_back();
+            }
+            justPushed = true;
+        } else if(!toPush && justPushed){
+            // Transfer from push to pop
+            for(int i = 0; i < size; i++){
+                popStack.push_back(pushStack[pushStack.size() - 1]);
+                pushStack.pop_back();
+            }
+            justPushed = false;
+        }
+        // Other two conditions do not require transfer
+    }
+};
+
+/**
+ * Your MyQueue object will be instantiated and called as such:
+ * MyQueue* obj = new MyQueue();
+ * obj->push(x);
+ * int param_2 = obj->pop();
+ * int param_3 = obj->peek();
+ * bool param_4 = obj->empty();
+ */
+
 // Leet Code Arrays Quest Problems
 class Solution {
 public:
@@ -1223,11 +1330,200 @@ public:
             cout << "failure. Expected: " << exp << " Result: " << res << endl;
         }
     }
+
+    /*
+    The school cafeteria offers circular and square sandwiches at lunch break, referred to by numbers 0 and 1 respectively. All students stand in a queue. Each student either prefers square or circular sandwiches.
+
+    The number of sandwiches in the cafeteria is equal to the number of students. The sandwiches are placed in a stack. At each step:
+
+        If the student at the front of the queue prefers the sandwich on the top of the stack, they will take it and leave the queue.
+        Otherwise, they will leave it and go to the queue's end.
+
+    This continues until none of the queue students want to take the top sandwich and are thus unable to eat.
+
+    You are given two integer arrays students and sandwiches where sandwiches[i] is the type of the i​​​​​​th sandwich in the stack (i = 0 is the top of the stack) and students[j] is the preference of the j​​​​​​th student in the initial queue (j = 0 is the front of the queue). Return the number of students that are unable to eat.
+    
+    Initialy I thought this might be simplified as a counting problem, because the students cycle infinitely. However, there can be so many of a type of sandwhich in a row that students won't be able to work though them. For example:
+        students = {1,1,1,1,1};
+        sandwiches = {1,0,1};
+    There is no student to take the circular sandwich, so the square sandwich is stranded under it (stack) and 4 students would go hungry.
+
+    */
+    int countStudents(vector<int>& students, vector<int>& sandwiches) {
+        //----- INITIALIZATIONS -----
+        // Nominally would want to make a copy of students to preserve the original data
+        // Pass by reference - not constant reference though
+        int queueFront = 0;
+        int queueLen = students.size();
+        // First student sent to the back of the line
+        int sentBackCounter = -1;
+        // Current sandwhich on top of the stack
+        uint currSandwich = 0;
+        
+        //----- ALGORITHM -----
+        // Three exit conditions:
+        // - All of the students are fed
+        // - No more sandwiches
+        // - No student wants the top sandwhich
+        while(queueLen > 1 && currSandwich != sandwiches.size() && sentBackCounter != queueLen){
+            if(students[queueFront] == sandwiches[currSandwich]){
+                // If the student wants the sandwhich remove them and the sandwhich from the queue
+                students.erase(students.begin() + queueFront);
+                queueLen--;
+                currSandwich++;
+                // Reset the sent back counter
+                sentBackCounter = 0;
+                // Fix the front of the queue
+                queueFront = queueFront % queueLen;
+            } else {
+                // Track how many students have been sent back
+                sentBackCounter++;
+                // Move to the next student
+                queueFront = (queueFront + 1) % queueLen;
+            }
+            
+        }
+
+        // Last student
+        if(queueLen == 1 && students[0] == sandwiches[currSandwich]){
+            queueLen--;
+        }
+
+        return queueLen;
+    }
+    
+    void test_countStudents(){
+        //----- INITIALIZATIONS -----
+        vector<int> input1;
+        vector<int> input2;
+        int exp;
+        int res;
+
+        //----- TESTS -----
+        // Test 1
+        input1 = {1,1,0,0};
+        input2 = {0,1,0,1};
+        exp = 0;
+        res = countStudents(input1, input2);
+
+        // Print results of test
+        cout << "Test 1: ";
+        if(exp == res){
+            cout << "success." << endl;
+        } else {
+            cout << "failure. Expected: " << exp << " Result: " << res << endl;
+        }
+
+        // Test 2
+        input1 = {1,1,1,0,0,1};
+        input2 = {1,0,0,0,1,1};
+        exp = 3;
+        res = countStudents(input1, input2);
+
+        // Print results of test
+        cout << "Test 2: ";
+        if(exp == res){
+            cout << "success." << endl;
+        } else {
+            cout << "failure. Expected: " << exp << " Result: " << res << endl;
+        }
+
+        // Test 3
+        input1 = {1,1,1,1,1,1};
+        input2 = {1,0,1};
+        exp = 5;
+        res = countStudents(input1, input2);
+
+        // Print results of test
+        cout << "Test 2: ";
+        if(exp == res){
+            cout << "success." << endl;
+        } else {
+            cout << "failure. Expected: " << exp << " Result: " << res << endl;
+        }
+    }
+
+    /*
+    There are n people in a line queuing to buy tickets, where the 0th person is at the front of the line and the (n - 1)th person is at the back of the line.
+
+    You are given a 0-indexed integer array tickets of length n where the number of tickets that the ith person would like to buy is tickets[i].
+
+    Each person takes exactly 1 second to buy a ticket. A person can only buy 1 ticket at a time and has to go back to the end of the line (which happens instantaneously) in order to buy more tickets. If a person does not have any tickets left to buy, the person will leave the line.
+
+    Return the time taken for the person initially at position k (0-indexed) to finish buying tickets.
+    
+    This seems like it can be solved without a queue
+    */
+    int timeRequiredToBuy(vector<int>& tickets, int k) {
+        //----- INITIALIZATIONS -----
+        // Total amount of time needed
+        int total = 0;
+        
+        //----- ALGORITHM -----
+        // People before person k
+        for(int i = 0; i <= k; i++){
+            total += tickets[i] <= tickets[k] ? tickets[i] : tickets[k];
+        }
+        
+        // People after person k
+        for(uint i = k + 1; i < tickets.size(); i++){
+            total += (tickets[i] < tickets[k] ? tickets[i] : tickets[k] - 1); 
+        }
+
+        return total;
+    }
+
+    void test_timeRequiredToBuy(){
+        //----- INITIALIZATIONS -----
+        vector<int> input1;
+        int input2;
+        int exp;
+        int res;
+
+        //----- TESTS -----
+        // Test 1
+        input1 = {2,3,2};
+        input2 = 2;
+        exp = 6;
+        res = timeRequiredToBuy(input1, input2);
+
+        // Print results of test
+        cout << "Test 1: ";
+        if(exp == res){
+            cout << "success." << endl;
+        } else {
+            cout << "failure. Expected: " << exp << " Result: " << res << endl;
+        }
+
+        // Test 2
+        input1 = {5,1,1,1};
+        input2 = 0;
+        exp = 8;
+        res = timeRequiredToBuy(input1, input2);
+
+        // Print results of test
+        cout << "Test 2: ";
+        if(exp == res){
+            cout << "success." << endl;
+        } else {
+            cout << "failure. Expected: " << exp << " Result: " << res << endl;
+        }
+    }
+
+    void test_MyQueue(){
+        MyQueue myQueue = MyQueue();
+        myQueue.push(1); // queue is: [1]
+        myQueue.push(2); // queue is: [1, 2] (leftmost is front of the queue)
+        cout << myQueue.peek() << " (1)" << endl; // return 1
+        cout << myQueue.pop() << " (1)"<< endl; // return 1, queue is [2]
+        cout << myQueue.empty() << " (0/false)"<< endl; // return false
+    }
+
 };
 
 int main(){
     Solution mySolution;
-    mySolution.test_largestRectangleArea();
+    mySolution.test_MyQueue();
     return 0;
 }
 
